@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banksy ART62 — Печать на стенах в Рязани</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-soft: #1a1a1a;
+            --accent: #e31e24;
+            --accent-glow: rgba(227, 30, 36, 0.35);
+            --text: #f5f5f5;
+            --text-muted: #9a9a9a;
+            --border: #2a2a2a;
+            --white: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.65;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+        /* ===== 1. ПОЛОСА ПРОКРУТКИ ===== */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            z-index: 9999;
+            width: 0%;
+            box-shadow: 0 0 10px var(--accent);
+            transition: width 0.1s;
+        }
+
+        /* ===== БАЗОВЫЕ АНИМАЦИИ ПРИ ПРОКРУТКЕ ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+
+        /* ===== 2. АНИМАЦИЯ ГЛАВНОГО ЭКРАНА (Загрузка) ===== */
+        .hero-anim {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: heroFadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .hero-anim-delay-1 { animation-delay: 0.2s; }
+        .hero-anim-delay-2 { animation-delay: 0.4s; }
+        .hero-anim-delay-3 { animation-delay: 0.6s; }
+
+        @keyframes heroFadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Пульсация неона для заголовка */
+        .neon-pulse {
+            animation: neonPulse 3s infinite alternate;
+        }
+        @keyframes neonPulse {
+            0% { text-shadow: 0 0 5px rgba(227, 30, 36, 0.2); }
+            100% { text-shadow: 0 0 20px rgba(227, 30, 36, 0.6), 0 0 40px rgba(227, 30, 36, 0.3); }
+        }
+
+        /* ===== ШАПКА ===== */
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            transform: translateY(-100%);
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.1s;
+        }
+        @keyframes slideDown {
+            to { transform: translateY(0); }
+        }
+        
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            gap: 20px;
+        }
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+        .logo span { color: var(--accent); }
+
+        nav ul { display: flex; gap: 32px; }
+        nav a {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding-bottom: 4px;
+            transition: color 0.25s;
+        }
+        nav a::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: 0;
+            width: 0; height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+        nav a:hover { color: var(--accent); }
+        nav a:hover::after { width: 100%; }
+
+        .header-phone {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--white);
+            white-space: nowrap;
+        }
+
+        /* ===== ГЕРОЙ ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 140px 0 100px;
+            position: relative;
+            background: 
+                linear-gradient(to right, rgba(10,10,10,0.95) 40%, rgba(10,10,10,0.6) 100%),
+                url('https://images.unsplash.com/photo-1561839561-b13bcfe95249?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
+            background-attachment: fixed; /* Эффект параллакса */
+        }
+        .hero-content { max-width: 640px; }
+        .hero-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 18px;
+            border-radius: 4px;
+            margin-bottom: 28px;
+        }
+        .hero h1 {
+            font-size: clamp(2.8rem, 6.5vw, 4.8rem);
+            line-height: 1.05;
+            margin-bottom: 24px;
+        }
+        .hero h1 .accent { 
+            color: var(--accent); 
+            display: inline-block;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin-bottom: 36px;
+        }
+        .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+
+        /* ===== 3. КНОПКИ С БЛИКОМ ===== */
+        .btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 36px;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: var(--white);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+        .btn-primary:hover {
+            background: #c4161c;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px var(--accent-glow);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--white);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover {
+            border-color: var(--white);
+        }
+        /* Блик */
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            transition: left 0.5s ease-in-out;
+            z-index: -1;
+        }
+        .btn:hover::before { left: 200%; }
+
+        /* ===== БЕГУЩАЯ СТРОКА ===== */
+        .ticker {
+            background: var(--accent);
+            color: var(--white);
+            padding: 12px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .ticker-track {
+            display: inline-block;
+            animation: scroll 30s linear infinite;
+        }
+        /* 4. ОСТАНОВКА ПРИ НАВЕДЕНИИ */
+        .ticker:hover .ticker-track {
+            animation-play-state: paused;
+        }
+        .ticker-track span { margin: 0 28px; }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        /* ===== СЕКЦИИ ===== */
+        section { padding: 100px 0; }
+
+        .section-head { margin-bottom: 56px; }
+        .kicker {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+        }
+
+        /* ===== О НАС ===== */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .about-text p {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 1.02rem;
+        }
+        .about-text p strong { color: var(--text); }
+        .about-image {
+            height: 500px;
+            border-radius: 8px;
+            background: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1974&auto=format&fit=crop') center/cover no-repeat;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .about-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(10,10,10,0.6), transparent 50%);
+        }
+
+        /* ===== 5. КАРТОЧКИ С ЭФФЕКТОМ ПРОЖЕКТОРА (Световой след) ===== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+        }
+        .feature-card, .pricing-card {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 30px 24px;
+            transition: border-color 0.3s;
+            overflow: hidden;
+        }
+        .feature-card::before, .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y),
+                rgba(227, 30, 36, 0.1),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .feature-card:hover, .pricing-card:hover {
+            border-color: rgba(227, 30, 36, 0.5);
+        }
+        .feature-card:hover::before, .pricing-card:hover::before {
+            opacity: 1;
+        }
+        
+        /* Возвращаем контент на передний план */
+        .feature-card > *, .pricing-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-icon { font-size: 1.8rem; margin-bottom: 16px; }
+        .feature-card h4 { font-size: 1rem; margin-bottom: 8px; color: var(--white); }
+        .feature-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+        /* ===== 6. 3D ГАЛЕРЕЯ ===== */
+        .gallery-section { background: var(--bg-soft); }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            perspective: 1000px; /* Для 3D эффекта */
+        }
+        .gallery-item {
+            height: 280px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
+            /* Начальное состояние для анимации */
+            opacity: 0;
+            transform: scale(0.9) translateY(20px) rotateX(10deg);
+        }
+        .gallery-item.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0) rotateX(0);
+        }
+        .gallery-item:hover {
+            transform: scale(1.03) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+        .gallery-item::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 40px 20px 20px;
+            background: linear-gradient(to top, rgba(10,10,10,0.95) 10%, transparent);
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transform: translateY(10px);
+            transition: transform 0.4s;
+        }
+        .gallery-item:hover::after {
+            transform: translateY(0);
+        }
+
+        /* ===== ПРОЦЕСС ===== */
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-top: 50px;
+        }
+        .process-step {
+            position: relative;
+            padding: 24px;
+            border-left: 2px solid var(--accent);
+            background: var(--bg-card);
+            transition: transform 0.3s;
+        }
+        .process-step:hover {
+            transform: translateX(5px);
+        }
+        .process-step .step-num {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            opacity: 0.3;
+            line-height: 1;
+            margin-bottom: 10px;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .process-step:hover .step-num {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .process-step h4 { font-size: 1.05rem; margin-bottom: 8px; }
+        .process-step p { font-size: 0.88rem; color: var(--text-muted); }
+
+        /* ===== ЦЕНЫ ===== */
+        .pricing-section { background: var(--bg-soft); }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .pricing-card .price {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        .pricing-card .price span { color: var(--accent); font-size: 1rem; font-weight: 600; }
+        .pricing-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .pricing-card ul li {
+            padding: 8px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .pricing-card ul li:last-child { border-bottom: none; }
+
+        /* ===== КОНТАКТЫ ===== */
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+        .contact-block { margin-bottom: 32px; }
+        .contact-block h3 {
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .contact-block p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .contact-block a {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+        }
+        .contact-block a:hover { color: var(--accent); }
+
+        .map-box {
+            height: 100%;
+            min-height: 420px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 16px;
+            color: var(--text-muted);
+            background-image: 
+                linear-gradient(rgba(10,10,10,0.85), rgba(10,10,10,0.85)),
+                url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .map-box svg { color: var(--accent); }
+
+        /* ===== ПОДВАЛ ===== */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0 30px;
+            text-align: center;
+        }
+        .footer-logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+        .footer-logo span { color: var(--accent); }
+        footer p { font-size: 0.82rem; color: var(--text-muted); }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 900px) {
+            .about-grid, .contacts-grid { grid-template-columns: 1fr; gap: 40px; }
+            .about-image { height: 340px; }
+            nav ul { display: none; }
+        }
+        @media (max-width: 600px) {
+            .hero { text-align: center; background-attachment: scroll; }
+            .hero-content { margin: 0 auto; }
+            .hero p { margin-left: auto; margin-right: auto; }
+            .hero-buttons { justify-content: center; }
+            section { padding: 70px 0; }
+            .header-phone { font-size: 0.8rem; }
+            .gallery-grid { perspective: none; }
+            .gallery-item { transform: translateY(30px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Полоса прогресса -->
+    <div id="progress-bar"></div>
+
+    <header>
+        <div class="container header-inner">
+            <div class="logo">BANKSY <span>ART62</span></div>
+            <nav>
+                <ul>
+                    <li><a href="#about">О нас</a></li>
+                    <li><a href="#gallery">Работы</a></li>
+                    <li><a href="#pricing">Цены</a></li>
+                    <li><a href="#contacts">Контакты</a></li>
+                </ul>
+            </nav>
+            <a href="tel:+79209817771" class="header-phone">8 (920) 981-77-71</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <span class="hero-tag hero-anim hero-anim-delay-1">Печать на стенах · Рязань</span>
+                <h1 class="hero-anim hero-anim-delay-1">ВАШИ СТЕНЫ<br>МОГУТ <span class="accent neon-pulse">БОЛЬШЕ</span></h1>
+                <p class="hero-anim hero-anim-delay-2">Превращаем обычные стены в произведения искусства с помощью вертикальной печати. Оформляем школы, офисы, кафе, спортзалы и квартиры. Любые изображения, логотипы и надписи.</p>
+                <div class="hero-buttons hero-anim hero-anim-delay-3">
+                    <a href="#contacts" class="btn btn-primary">Обсудить проект</a>
+                    <a href="#gallery" class="btn btn-ghost">Смотреть работы</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="ticker">
+        <div class="ticker-track">
+            <span>Печать на стенах</span><span>•</span>
+            <span>Любые изображения</span><span>•</span>
+            <span>Экологичные чернила</span><span>•</span>
+            <span>Высокое качество</span><span>•</span>
+            <span>От идеи до реализации</span><span>•</span>
+            <span>Печать на стенах</span><span>•</span>
+            <span>Любые изображения</span><span>•</span>
+            <span>Экологичные чернила</span><span>•</span>
+            <span>Высокое качество</span><span>•</span>
+            <span>От идеи до реализации</span><span>•</span>
+        </div>
+    </div>
+
+    <section id="about">
+        <div class="container">
+            <div class="section-head reveal">
+                <span class="kicker">О нас</span>
+                <h2 class="section-title">Больше, чем просто стены</h2>
+            </div>
+            <div class="about-grid">
+                <div class="about-text reveal">
+                    <p><strong>Banksy ART62</strong> — команда профессионалов, которая превращает обычные стены в настоящие произведения искусства. Мы используем инновационные технологии вертикальной печати, чтобы создавать уникальные интерьерные решения.</p>
+                    <p>Работаем с частными клиентами и бизнесом. Оформляем школы и детские сады, офисы, кафе, спортивные залы и магазины. Любые изображения, логотипы, надписи и индивидуальные дизайны.</p>
+                    <p>Поможем с идеей и подготовим макет под вашу стену. Наши чернила экологичны и не имеют запаха, а печать выполняется быстро и аккуратно.</p>
+                </div>
+                <div class="about-image reveal delay-1"></div>
+            </div>
+
+            <div class="features-grid">
+                <!-- Карточки с эффектом прожектора (JS добавит переменные) -->
+                <div class="feature-card reveal mouse-glow">
+                    <div class="feature-icon">🖨️</div>
+                    <h4>Вертикальная печать</h4>
+                    <p>Печатаем прямо на стене — без обоев и пленок. Быстро и чисто.</p>
+                </div>
+                <div class="feature-card reveal delay-1 mouse-glow">
+                    <div class="feature-icon">🎨</div>
+                    <h4>Любые изображения</h4>
+                    <p>Логотипы, надписи, фотографии, арт — под ваш стиль.</p>
+                </div>
+                <div class="feature-card reveal delay-2 mouse-glow">
+                    <div class="feature-icon">🌿</div>
+                    <h4>Эко-чернила</h4>
+                    <p>Без запаха и вредных веществ. Безопасно для детских учреждений.</p>
+                </div>
+                <div class="feature-card reveal delay-3 mouse-glow">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Скорость</h4>
+                    <p>Выполнение заказа от 3 часов. Минимум пыли и грязи.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="gallery-section">
+        <div class="container">
+            <div class="section-head reveal">
+                <span class="kicker">Портфолио</span>
+                <h2 class="section-title">Наши работы</h2>
+            </div>
+            <div class="gallery-grid">
+                <!-- Класс gallery-item запускает 3D анимацию -->
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=1974&auto=format&fit=crop');" data-label="Спортивный объект"></div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1974&auto=format&fit=crop');" data-label="Школа и детский сад"></div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1974&auto=format&fit=crop');" data-label="Офис и общественное пространство"></div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1974&auto=format&fit=crop');" data-label="Торговый объект"></div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1974&auto=format&fit=crop');" data-label="Интерьер кафе"></div>
+                <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1974&auto=format&fit=crop');" data-label="Индивидуальный проект"></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <div class="section-head reveal">
+                <span class="kicker">Как мы работаем</span>
+                <h2 class="section-title">Простой процесс</h2>
+            </div>
+            <div class="process-grid">
+                <div class="process-step reveal">
+                    <div class="step-num">01</div>
+                    <h4>Заявка</h4>
+                    <p>Вы пишете нам или звоните. Обсуждаем задачу.</p>
+                </div>
+                <div class="process-step reveal delay-1">
+                    <div class="step-num">02</div>
+                    <h4>Фото и размеры</h4>
+                    <p>Присылаете фото стены и её размеры. Мы готовим макет.</p>
+                </div>
+                <div class="process-step reveal delay-2">
+                    <div class="step-num">03</div>
+                    <h4>Согласование</h4>
+                    <p>Утверждаем дизайн и стоимость. Назначаем дату.</p>
+                </div>
+                <div class="process-step reveal delay-3">
+                    <div class="step-num">04</div>
+                    <h4>Печать</h4>
+                    <p>Приезжаем и печатаем прямо на стене. Быстро и аккуратно.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="section-head reveal">
+                <span class="kicker">Стоимость</span>
+                <h2 class="section-title">Цены</h2>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card reveal mouse-glow">
+                    <div class="price">2 500 <span>₽</span></div>
+                    <h4>Стартовый</h4>
+                    <ul>
+                        <li>Небольшие изображения</li>
+                        <li>Логотипы и надписи</li>
+                        <li>Печать до 3 часов</li>
+                        <li>Консультация</li>
+                    </ul>
+                </div>
+                <div class="pricing-card reveal delay-1 mouse-glow">
+                    <div class="price">от 5 000 <span>₽</span></div>
+                    <h4>Оптимальный</h4>
+                    <ul>
+                        <li>Средние проекты</li>
+                        <li>Фотографии и арты</li>
+                        <li>Индивидуальный макет</li>
+                        <li>Выезд и печать</li>
+                    </ul>
+                </div>
+                <div class="pricing-card reveal delay-2 mouse-glow">
+                    <div class="price">Индивидуально</div>
+                    <h4>Масштабный</h4>
+                    <ul>
+                        <li>Большие площади</li>
+                        <li>Коммерческие объекты</li>
+                        <li>Сложные дизайны</li>
+                        <li>Смета по фото</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="text-align:center; margin-top:36px; color:var(--text-muted); font-size:0.85rem;" class="reveal">Точная стоимость зависит от размера, сложности и поверхности. Оставьте заявку для расчёта.</p>
+        </div>
+    </section>
+
+    <section id="contacts">
+        <div class="container">
+            <div class="section-head reveal">
+                <span class="kicker">Связаться</span>
+                <h2 class="section-title">Обсудим ваш проект?</h2>
+            </div>
+            <div class="contacts-grid">
+                <div>
+                    <div class="contact-block reveal">
+                        <h3>Телефон</h3>
+                        <a href="tel:+79209817771">8 (920) 981-77-71</a>
+                        <p style="margin-top:6px; font-size:0.85rem;">Ежедневно с 10:00 до 20:00</p>
+                    </div>
+                    <div class="contact-block reveal delay-1">
+                        <h3>Социальные сети</h3>
+                        <p>ВКонтакте: <a href="https://vk.com/banksy_art_62" target="_blank" style="font-size:1rem; font-weight:500;">vk.com/banksy_art_62</a></p>
+                    </div>
+                    <div class="contact-block reveal delay-2">
+                        <h3>География</h3>
+                        <p>Рязань и Рязанская область</p>
+                    </div>
+                    <div class="contact-block reveal delay-3">
+                        <h3>Для кого</h3>
+                        <p>Частные клиенты · Бизнес · Школы · Кафе · Офисы</p>
+                    </div>
+                </div>
+
+                <div class="map-box reveal delay-1">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <p style="font-size:1.2rem; color:var(--white); font-weight:700;">Banksy ART62</p>
+                    <p>Рязань</p>
+                    <a href="https://vk.com/banksy_art_62" target="_blank" class="btn btn-primary" style="margin-top:8px;">Написать ВКонтакте</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">BANKSY <span>ART62</span></div>
+            <p>Печать на стенах · Рязань</p>
+            <p style="margin-top:6px;">&copy; 2026 Banksy ART62. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // 1. Полоса прогресса прокрутки
+            const progressBar = document.getElementById('progress-bar');
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = (scrollTop / docHeight) * 100;
+                progressBar.style.width = scrollPercent + '%';
+            });
+
+            // 2. Появление элементов при прокрутке
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            reveals.forEach(el => observer.observe(el));
+
+            // 3. 3D Анимация галереи (через отдельный observer для красоты)
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            const galleryObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        galleryObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            galleryItems.forEach(el => galleryObserver.observe(el));
+
+            // 4. Эффект "Прожектора" (световой след от мыши)
+            const glowCards = document.querySelectorAll('.mouse-glow');
+            glowCards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
